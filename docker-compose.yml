@@ -15,6 +15,7 @@ x-n8n: &service-n8n
   environment:
     - N8N_PROTOCOL=http
     - N8N_PORT=5678
+    - N8N_SECURE_COOKIE=true
     - DB_TYPE=postgresdb
     - DB_POSTGRESDB_HOST=postgres
     - DB_POSTGRESDB_USER=${POSTGRES_USER}
