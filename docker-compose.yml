@@ -118,7 +118,7 @@ services:
 
   traefik:
     image: traefik:v3.5.2
-    restart: always
+    restart: unless-stopped
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
