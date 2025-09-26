@@ -118,7 +118,7 @@ services:
       - traefik.http.routers.n8n.middlewares=n8n@docker
 
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.5.2
     restart: always
     command:
       - "--providers.docker=true"
