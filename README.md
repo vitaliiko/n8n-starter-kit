@@ -45,6 +45,14 @@ cd self-hosted-ai-starter-kit
 cp .env.example .env # you should update secrets and passwords inside
 ```
 
+> [!IMPORTANT]
+> Set a strong value for `N8N_ENCRYPTION_KEY` in your `.env` file before starting the
+> stack. The bundled demo credentials are automatically re-encrypted with the key you
+> provide during the import step, so you can safely replace the default
+> `super-secret-key`. If you ever customize or rotate the key that was originally used
+> to encrypt the demo credentials, adjust `N8N_DEMO_CREDENTIALS_KEY` accordingly so the
+> import process can decrypt and re-key them.
+
 ### Running n8n using Docker Compose
 
 #### For Nvidia GPU users
