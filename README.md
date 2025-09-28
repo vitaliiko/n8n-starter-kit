@@ -142,6 +142,34 @@ and [Information Extractor](https://docs.n8n.io/integrations/builtin/cluster-nod
 nodes. To keep everything local, just remember to use the Ollama node for your
 language model and Qdrant as your vector store.
 
+## PostgreSQL backups
+
+The stack now includes a `postgres-maintenance` service that runs a cron job to
+create database dumps with `pg_dump`. Two new environment variables control the
+schedule and output path:
+
+- `POSTGRES_BACKUP_CRON` (default: `0 3 * * *`) - Cron expression describing
+  when the automatic backup should run.
+- `POSTGRES_BACKUP_FILE` (default: `/backups/n8n-backup.sql`) - Absolute path
+  inside the maintenance container where the dump is written. By default this
+  maps to `./backups` on the host.
+
+Backups are stored on disk so they persist across container restarts. You can
+manually trigger a backup at any time with:
+
+```bash
+docker compose run --rm postgres-maintenance backup
+```
+
+To restore the most recent backup, run the restore job manually:
+
+```bash
+docker compose run --rm postgres-maintenance restore
+```
+
+The restore job stops after it finishes applying the dump, making it safe to
+run only when you intend to replace the current PostgreSQL data.
+
 > [!NOTE]
 > This starter kit is designed to help you get started with self-hosted AI
 > workflows. While it’s not fully optimized for production environments, it

@@ -71,6 +71,27 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres-maintenance:
+    build:
+      context: ./scripts/postgres-maintenance
+    image: postgres-maintenance
+    container_name: postgres-maintenance
+    networks: ['demo']
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - "POSTGRES_BACKUP_CRON=${POSTGRES_BACKUP_CRON:-0 3 * * *}"
+      - "POSTGRES_BACKUP_FILE=${POSTGRES_BACKUP_FILE:-/backups/n8n-backup.sql}"
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   n8n-import:
     <<: *service-n8n
     hostname: n8n-import
