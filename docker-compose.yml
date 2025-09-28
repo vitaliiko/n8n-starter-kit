@@ -23,6 +23,7 @@ x-n8n: &service-n8n
     - N8N_DIAGNOSTICS_ENABLED=false
     - N8N_PERSONALIZATION_ENABLED=false
     - N8N_ENCRYPTION_KEY
+    - N8N_DEMO_CREDENTIALS_KEY
     - N8N_USER_MANAGEMENT_JWT_SECRET
     - OLLAMA_HOST=${OLLAMA_HOST:-ollama:11434}
   env_file:
@@ -77,9 +78,10 @@ services:
     entrypoint: /bin/sh
     command:
       - "-c"
-      - "n8n import:credentials --separate --input=/demo-data/credentials && n8n import:workflow --separate --input=/demo-data/workflows"
+      - "node /scripts/rekey-demo-credentials.mjs && n8n import:credentials --separate --input=/demo-data/credentials && n8n import:workflow --separate --input=/demo-data/workflows"
     volumes:
       - ./n8n/demo-data:/demo-data
+      - ./scripts:/scripts:ro
     depends_on:
       postgres:
         condition: service_healthy
