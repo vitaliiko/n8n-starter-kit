@@ -142,6 +142,41 @@ and [Information Extractor](https://docs.n8n.io/integrations/builtin/cluster-nod
 nodes. To keep everything local, just remember to use the Ollama node for your
 language model and Qdrant as your vector store.
 
+## Running with or without Traefik
+
+Traefik is enabled by default to terminate TLS and expose n8n through the
+reverse proxy. The stack can also run without Traefik for local-only HTTP
+testing when needed.
+
+### Default (Traefik + HTTPS)
+
+```bash
+docker compose up -d
+```
+
+Traefik listens on port `5678` and proxies traffic to the n8n container over
+the internal Docker network. Stop the stack with:
+
+```bash
+docker compose down
+```
+
+### Local-only (no Traefik, direct HTTP)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+```
+
+This override publishes the n8n editor directly on
+`http://localhost:5678/`. When you are finished, shut it down with:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml down
+```
+
+If you need Traefik alongside the local override (for example to test the
+certificate flow), add `--profile https` to the `docker compose` command.
+
 ## Using a Cloudflare Tunnel with HTTPS
 
 If you are terminating TLS in front of the stack (for example, with a

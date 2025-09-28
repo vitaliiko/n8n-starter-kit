@@ -1,0 +1,11 @@
+services:
+  traefik:
+    profiles: ["https"]
+
+  n8n:
+    networks: ['demo']
+    environment:
+      N8N_PROTOCOL: http
+    ports:
+      - "5678:5678"
+    labels: []
