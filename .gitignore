@@ -1,3 +1,5 @@
 .env
 backups/*
 !backups/.gitkeep
+certs/*
+!certs/.gitkeep
