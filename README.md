@@ -142,6 +142,39 @@ and [Information Extractor](https://docs.n8n.io/integrations/builtin/cluster-nod
 nodes. To keep everything local, just remember to use the Ollama node for your
 language model and Qdrant as your vector store.
 
+## Using a Cloudflare Tunnel with HTTPS
+
+If you are terminating TLS in front of the stack (for example, with a
+Cloudflare Tunnel) you can let Traefik serve your custom certificate instead of
+requesting one from Let’s Encrypt.
+
+1. Place your Cloudflare-issued certificate and private key in the `certs`
+   directory using the filenames `cloudflare.crt` and `cloudflare.key`.
+   The files are mounted read-only into the Traefik container at runtime, so
+   they should remain protected on the host system.
+2. Configure the usual DNS values in your `.env` file so Traefik can match the
+   incoming host header:
+
+   ```bash
+   SUBDOMAIN=my-n8n
+   DOMAIN_NAME=example.com
+   ```
+
+3. Make sure your Cloudflare Tunnel forwards HTTPS traffic to
+   `http://localhost:5678`. Traefik listens on port `5678` inside the Compose
+   project and automatically routes the requests to the n8n container over the
+   internal Docker network.
+4. (Optional) If you need to regenerate or rotate the certificate, replace the
+   files in `certs/` and restart the Traefik service with:
+
+   ```bash
+   docker compose restart traefik
+   ```
+
+With this setup, external clients negotiate HTTPS with your Cloudflare
+certificate, while Traefik proxies the requests to n8n over the secure internal
+network.
+
 ## PostgreSQL backups
 
 The stack now includes a `postgres-maintenance` service that runs a cron job to
