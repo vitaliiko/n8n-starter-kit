@@ -12,6 +12,9 @@ networks:
 x-n8n: &service-n8n
   image: n8nio/n8n:latest
   networks: ['demo', 'traefik']
+  dns:
+    - 1.1.1.1
+    - 8.8.8.8
   environment:
     N8N_PROTOCOL: https
     N8N_PORT: "5678"
