@@ -35,6 +35,8 @@ x-n8n: &service-n8n
 
 x-ollama: &service-ollama
   image: ollama/ollama:latest
+  mem_limit: 8g
+  memswap_limit: 16g
   container_name: ollama
   networks: ['demo']
   restart: unless-stopped
@@ -54,7 +56,7 @@ x-init-ollama: &init-ollama
     - OLLAMA_HOST=ollama:11434
   command:
     - "-c"
-    - "sleep 3; ollama pull llama3.2"
+    - "sleep 3; ollama pull phi-2"
 
 services:
   postgres:
