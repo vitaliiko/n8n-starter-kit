@@ -1,339 +1,247 @@
-# Self-hosted AI starter kit
+# n8n Starter Kit
 
-**Self-hosted AI Starter Kit** is an open-source Docker Compose template designed to swiftly initialize a comprehensive local AI and low-code development environment.
+A complete n8n automation platform setup with PostgreSQL, Ollama (ARM64), Qdrant vector database, and Traefik reverse proxy.
 
-![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/self-hosted-ai-starter-kit/main/assets/n8n-demo.gif)
+## Features
 
-Curated by <https://github.com/n8n-io>, it combines the self-hosted n8n
-platform with a curated list of compatible AI products and components to
-quickly get started with building self-hosted AI workflows.
+- **n8n**: Self-hosted workflow automation
+- **PostgreSQL**: Reliable database backend with automated backups
+- **Ollama**: Local LLM support (optimized for ARM64/Raspberry Pi 5)
+- **Qdrant**: Vector database for AI/ML workflows
+- **Traefik**: Reverse proxy with automatic HTTPS
+- **Automated Backups**: Daily PostgreSQL backups
 
-> [!TIP]
-> [Read the announcement](https://blog.n8n.io/self-hosted-ai/)
+## Prerequisites
 
-### What’s included
+- Docker and Docker Compose
+- Raspberry Pi 5 (or other ARM64 device) for Ollama support
+- Domain name (for Traefik HTTPS)
 
-✅ [**Self-hosted n8n**](https://n8n.io/) - Low-code platform with over 400
-integrations and advanced AI components
+## Quick Start
 
-✅ [**Ollama**](https://ollama.com/) - Cross-platform LLM platform to install
-and run the latest local LLMs
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd n8n-starter-kit
+   ```
 
-✅ [**Qdrant**](https://qdrant.tech/) - Open-source, high performance vector
-store with an comprehensive API
+2. **Create environment file**
+   ```bash
+   cp .env.example .env
+   ```
 
-✅ [**PostgreSQL**](https://www.postgresql.org/) -  Workhorse of the Data
-Engineering world, handles large amounts of data safely.
+3. **Configure your `.env` file**
+   ```bash
+   # Database
+   POSTGRES_USER=n8n
+   POSTGRES_PASSWORD=<secure-password>
+   POSTGRES_DB=n8n
+   
+   # n8n
+   N8N_ENCRYPTION_KEY=<generate-random-key>
+   N8N_DEMO_CREDENTIALS_KEY=<generate-random-key>
+   N8N_USER_MANAGEMENT_JWT_SECRET=<generate-random-key>
+   
+   # Domain
+   SUBDOMAIN=n8n
+   DOMAIN_NAME=yourdomain.com
+   
+   # Ollama Model (optional, defaults to phi-2)
+   OLLAMA_MODEL=llama3.2
+   ```
 
-### What you can build
+4. **Start the stack**
+   ```bash
+   docker compose up -d
+   ```
 
-⭐️ **AI Agents** for scheduling appointments
+5. **Access n8n**
+   - Open `https://n8n.yourdomain.com` (or your configured subdomain)
+   - Complete the initial setup
 
-⭐️ **Summarize Company PDFs** securely without data leaks
+## Local Development (Without Traefik)
 
-⭐️ **Smarter Slack Bots** for enhanced company communications and IT operations
+If you want to run the stack locally without Traefik and SSL, use the local override configuration:
 
-⭐️ **Private Financial Document Analysis** at minimal cost
+1. **Start the stack locally**
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+   ```
 
-## Installation
+2. **Access n8n locally**
+   - Open `http://localhost:5678`
+   - No domain or SSL certificates required
 
-### Cloning the Repository
+3. **Stop the local stack**
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.local.yml down
+   ```
+
+**What's different in local mode:**
+- Traefik is disabled
+- n8n runs on HTTP instead of HTTPS
+- Direct access via `localhost:5678` (no reverse proxy)
+- No SSL certificates needed
+- Perfect for development and testing
+
+## Ollama Configuration
+
+### Supported Models
+
+The Ollama service uses the ARM64-optimized image (`ghcr.io/justincv/ollama-arm64:latest`) for Raspberry Pi 5.
+
+You can specify which model to use by setting the `OLLAMA_MODEL` environment variable in your `.env` file:
 
 ```bash
-git clone https://github.com/n8n-io/self-hosted-ai-starter-kit.git
-cd self-hosted-ai-starter-kit
-cp .env.example .env # you should update secrets and passwords inside
+OLLAMA_MODEL=llama3.2
 ```
 
-> [!IMPORTANT]
-> Set a strong value for `N8N_ENCRYPTION_KEY` in your `.env` file before starting the
-> stack. The bundled demo credentials are automatically re-encrypted with the key you
-> provide during the import step, so you can safely replace the default
-> `super-secret-key`. If you ever customize or rotate the key that was originally used
-> to encrypt the demo credentials, adjust `N8N_DEMO_CREDENTIALS_KEY` accordingly so the
-> import process can decrypt and re-key them.
+Default model: `phi-2`
 
-### Running n8n using Docker Compose
+### Changing Models
 
-#### For Nvidia GPU users
+**If containers are already running:**
 
+1. Pull the new model directly:
+   ```bash
+   docker compose exec ollama ollama pull llama3.2
+   ```
+
+2. Restart the ollama container:
+   ```bash
+   docker compose restart ollama
+   ```
+
+**If starting fresh:**
+
+1. Update `OLLAMA_MODEL` in `.env`
+2. Start the stack:
+   ```bash
+   docker compose up -d
+   ```
+
+The `ollama-pull-llama` service will automatically download the specified model.
+
+### Available Models
+
+Some popular models compatible with ARM64:
+- `phi-2` (default, ~2.7GB)
+- `llama3.2` (~2GB)
+- `llama3.2:1b` (~1.3GB)
+- `gemma2:2b` (~1.6GB)
+- `qwen2.5:0.5b` (~397MB)
+
+See [Ollama Model Library](https://ollama.com/library) for more options.
+
+## Services
+
+### n8n
+- **Port**: 5678 (via Traefik)
+- **Data**: Stored in `n8n_storage` volume
+- **Shared Folder**: `./shared` mounted to `/data/shared`
+
+### PostgreSQL
+- **Version**: 16-alpine
+- **Data**: Stored in `postgres_storage` volume
+- **Backups**: Automated daily backups to `./backups`
+
+### Ollama
+- **Image**: `ghcr.io/justincv/ollama-arm64:latest`
+- **Port**: 11434
+- **Data**: Stored in `ollama_storage` volume
+- **Memory Limit**: 8GB (configurable)
+
+### Qdrant
+- **Port**: 6333
+- **Data**: Stored in `qdrant_storage` volume
+
+### Traefik
+- **Port**: 5678
+- **Config**: `./traefik/dynamic/tls.yml`
+- **Certificates**: `./certs/`
+
+## Backup & Restore
+
+### PostgreSQL Backups
+
+Automated backups run daily at 3 AM (configurable via `POSTGRES_BACKUP_CRON`).
+
+**Manual Backup:**
 ```bash
-git clone https://github.com/n8n-io/self-hosted-ai-starter-kit.git
-cd self-hosted-ai-starter-kit
-cp .env.example .env # you should update secrets and passwords inside
-docker compose --profile gpu-nvidia up
+docker compose exec postgres-maintenance /backup.sh
 ```
 
-> [!NOTE]
-> If you have not used your Nvidia GPU with Docker before, please follow the
-> [Ollama Docker instructions](https://github.com/ollama/ollama/blob/main/docs/docker.md).
-
-### For AMD GPU users on Linux
-
+**Restore from Backup:**
 ```bash
-git clone https://github.com/n8n-io/self-hosted-ai-starter-kit.git
-cd self-hosted-ai-starter-kit
-cp .env.example .env # you should update secrets and passwords inside
-docker compose --profile gpu-amd up
+docker compose exec postgres-maintenance /restore.sh /backups/n8n-backup.sql
 ```
 
-#### For Mac / Apple Silicon users
+## Maintenance
 
-If you’re using a Mac with an M1 or newer processor, you can't expose your GPU
-to the Docker instance, unfortunately. There are two options in this case:
-
-1. Run the starter kit fully on CPU, like in the section "For everyone else"
-   below
-2. Run Ollama on your Mac for faster inference, and connect to that from the
-   n8n instance
-
-If you want to run Ollama on your mac, check the
-[Ollama homepage](https://ollama.com/)
-for installation instructions, and run the starter kit as follows:
-
+### View Logs
 ```bash
-git clone https://github.com/n8n-io/self-hosted-ai-starter-kit.git
-cd self-hosted-ai-starter-kit
-cp .env.example .env # you should update secrets and passwords inside
-docker compose up
+docker compose logs -f n8n
+docker compose logs -f ollama
 ```
 
-##### For Mac users running OLLAMA locally
-
-If you're running OLLAMA locally on your Mac (not in Docker), you need to modify the OLLAMA_HOST environment variable
-
-1. Set OLLAMA_HOST to `host.docker.internal:11434` in your .env file. 
-2. Additionally, after you see "Editor is now accessible via: <http://localhost:5678/>":
-
-    1. Head to <http://localhost:5678/home/credentials>
-    2. Click on "Local Ollama service"
-    3. Change the base URL to "http://host.docker.internal:11434/"
-
-#### For everyone else
-
+### Update Services
 ```bash
-git clone https://github.com/n8n-io/self-hosted-ai-starter-kit.git
-cd self-hosted-ai-starter-kit
-cp .env.example .env # you should update secrets and passwords inside
-docker compose --profile cpu up
-```
-
-## ⚡️ Quick start and usage
-
-The core of the Self-hosted AI Starter Kit is a Docker Compose file, pre-configured with network and storage settings, minimizing the need for additional installations.
-After completing the installation steps above, simply follow the steps below to get started.
-
-1. Open <http://localhost:5678/> in your browser to set up n8n. You’ll only
-   have to do this once.
-2. Open the included workflow:
-   <http://localhost:5678/workflow/srOnR8PAY3u4RSwb>
-3. Click the **Chat** button at the bottom of the canvas, to start running the workflow.
-4. If this is the first time you’re running the workflow, you may need to wait
-   until Ollama finishes downloading Llama3.2. You can inspect the docker
-   console logs to check on the progress.
-
-To open n8n at any time, visit <http://localhost:5678/> in your browser.
-
-With your n8n instance, you’ll have access to over 400 integrations and a
-suite of basic and advanced AI nodes such as
-[AI Agent](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent/),
-[Text classifier](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.text-classifier/),
-and [Information Extractor](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.information-extractor/)
-nodes. To keep everything local, just remember to use the Ollama node for your
-language model and Qdrant as your vector store.
-
-## Running with or without Traefik
-
-Traefik is enabled by default to terminate TLS and expose n8n through the
-reverse proxy. The stack can also run without Traefik for local-only HTTP
-testing when needed.
-
-### Default (Traefik + HTTPS)
-
-```bash
+docker compose pull
 docker compose up -d
 ```
 
-Traefik listens on port `5678` and proxies traffic to the n8n container over
-the internal Docker network. Stop the stack with:
-
+### Clean Up
 ```bash
+# Stop all services
 docker compose down
+
+# Remove volumes (WARNING: deletes all data)
+docker compose down -v
 ```
 
-### Local-only (no Traefik, direct HTTP)
+## Troubleshooting
 
+### Ollama out of memory
+Adjust memory limits in `docker-compose.yml`:
+```yaml
+x-ollama: &service-ollama
+  mem_limit: 6g      # Reduce if needed
+  memswap_limit: 12g # Reduce if needed
+```
+
+### n8n can't connect to Ollama
+Check that both services are on the same network:
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+docker compose exec n8n ping ollama
 ```
 
-This override publishes the n8n editor directly on
-`http://localhost:5678/`. When you are finished, shut it down with:
-
+### Model download fails
+Try pulling manually:
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml down
+docker compose exec ollama ollama pull <model-name>
 ```
 
-If you need Traefik alongside the local override (for example to test the
-certificate flow), add `--profile https` to the `docker compose` command.
+## Development
 
-## Using a Cloudflare Tunnel with HTTPS
+### Demo Data
+Demo workflows and credentials are located in `./n8n/demo-data/` and are automatically imported on first run.
 
-If you are terminating TLS in front of the stack (for example, with a
-Cloudflare Tunnel) you can let Traefik serve your custom certificate instead of
-requesting one from Let’s Encrypt.
-
-1. Place your Cloudflare-issued certificate and private key in the `certs`
-   directory using the filenames `cloudflare.crt` and `cloudflare.key`.
-   The files are mounted read-only into the Traefik container at runtime, so
-   they should remain protected on the host system.
-2. Configure the usual DNS values in your `.env` file so Traefik can match the
-   incoming host header:
-
-   ```bash
-   SUBDOMAIN=my-n8n
-   DOMAIN_NAME=example.com
-   ```
-
-3. Make sure your Cloudflare Tunnel forwards HTTPS traffic to
-   `http://localhost:5678`. Traefik listens on port `5678` inside the Compose
-   project and automatically routes the requests to the n8n container over the
-   internal Docker network.
-4. (Optional) If you need to regenerate or rotate the certificate, replace the
-   files in `certs/` and restart the Traefik service with:
-
-   ```bash
-   docker compose restart traefik
-   ```
-
-With this setup, external clients negotiate HTTPS with your Cloudflare
-certificate, while Traefik proxies the requests to n8n over the secure internal
-network.
-
-## PostgreSQL backups
-
-The stack now includes a `postgres-maintenance` service that runs a cron job to
-create database dumps with `pg_dump`. Two new environment variables control the
-schedule and output path:
-
-- `POSTGRES_BACKUP_CRON` (default: `0 3 * * *`) - Cron expression describing
-  when the automatic backup should run.
-- `POSTGRES_BACKUP_FILE` (default: `/backups/n8n-backup.sql`) - Absolute path
-  inside the maintenance container where the dump is written. By default this
-  maps to `./backups` on the host.
-
-Backups are stored on disk so they persist across container restarts. You can
-manually trigger a backup at any time with:
-
+### Re-keying Demo Credentials
 ```bash
-docker compose run --rm postgres-maintenance backup
+docker compose run --rm n8n-import
 ```
 
-To restore the most recent backup, run the restore job manually:
+## Security Notes
 
-```bash
-docker compose run --rm postgres-maintenance restore
-```
+- Always use strong, unique passwords for `POSTGRES_PASSWORD`
+- Generate secure random keys for n8n encryption keys
+- Keep your `.env` file secure and never commit it to version control
+- Use proper SSL/TLS certificates for production
 
-The restore job stops after it finishes applying the dump, making it safe to
-run only when you intend to replace the current PostgreSQL data.
+## License
 
-> [!NOTE]
-> This starter kit is designed to help you get started with self-hosted AI
-> workflows. While it’s not fully optimized for production environments, it
-> combines robust components that work well together for proof-of-concept
-> projects. You can customize it to meet your specific needs
+See [LICENSE](LICENSE) file for details.
 
-## Upgrading
+## Contributing
 
-* ### For Nvidia GPU setups:
-
-```bash
-docker compose --profile gpu-nvidia pull
-docker compose create && docker compose --profile gpu-nvidia up
-```
-
-* ### For Mac / Apple Silicon users
-
-```bash
-docker compose pull
-docker compose create && docker compose up
-```
-
-* ### For Non-GPU setups:
-
-```bash
-docker compose --profile cpu pull
-docker compose create && docker compose --profile cpu up
-```
-
-## 👓 Recommended reading
-
-n8n is full of useful content for getting started quickly with its AI concepts
-and nodes. If you run into an issue, go to [support](#support).
-
-- [AI agents for developers: from theory to practice with n8n](https://blog.n8n.io/ai-agents/)
-- [Tutorial: Build an AI workflow in n8n](https://docs.n8n.io/advanced-ai/intro-tutorial/)
-- [Langchain Concepts in n8n](https://docs.n8n.io/advanced-ai/langchain/langchain-n8n/)
-- [Demonstration of key differences between agents and chains](https://docs.n8n.io/advanced-ai/examples/agent-chain-comparison/)
-- [What are vector databases?](https://docs.n8n.io/advanced-ai/examples/understand-vector-databases/)
-
-## 🎥 Video walkthrough
-
-- [Installing and using Local AI for n8n](https://www.youtube.com/watch?v=xz_X2N-hPg0)
-
-## 🛍️ More AI templates
-
-For more AI workflow ideas, visit the [**official n8n AI template
-gallery**](https://n8n.io/workflows/categories/ai/). From each workflow,
-select the **Use workflow** button to automatically import the workflow into
-your local n8n instance.
-
-### Learn AI key concepts
-
-- [AI Agent Chat](https://n8n.io/workflows/1954-ai-agent-chat/)
-- [AI chat with any data source (using the n8n workflow too)](https://n8n.io/workflows/2026-ai-chat-with-any-data-source-using-the-n8n-workflow-tool/)
-- [Chat with OpenAI Assistant (by adding a memory)](https://n8n.io/workflows/2098-chat-with-openai-assistant-by-adding-a-memory/)
-- [Use an open-source LLM (via Hugging Face)](https://n8n.io/workflows/1980-use-an-open-source-llm-via-huggingface/)
-- [Chat with PDF docs using AI (quoting sources)](https://n8n.io/workflows/2165-chat-with-pdf-docs-using-ai-quoting-sources/)
-- [AI agent that can scrape webpages](https://n8n.io/workflows/2006-ai-agent-that-can-scrape-webpages/)
-
-### Local AI templates
-
-- [Tax Code Assistant](https://n8n.io/workflows/2341-build-a-tax-code-assistant-with-qdrant-mistralai-and-openai/)
-- [Breakdown Documents into Study Notes with MistralAI and Qdrant](https://n8n.io/workflows/2339-breakdown-documents-into-study-notes-using-templating-mistralai-and-qdrant/)
-- [Financial Documents Assistant using Qdrant and](https://n8n.io/workflows/2335-build-a-financial-documents-assistant-using-qdrant-and-mistralai/) [Mistral.ai](http://mistral.ai/)
-- [Recipe Recommendations with Qdrant and Mistral](https://n8n.io/workflows/2333-recipe-recommendations-with-qdrant-and-mistral/)
-
-## Tips & tricks
-
-### Accessing local files
-
-The self-hosted AI starter kit will create a shared folder (by default,
-located in the same directory) which is mounted to the n8n container and
-allows n8n to access files on disk. This folder within the n8n container is
-located at `/data/shared` -- this is the path you’ll need to use in nodes that
-interact with the local filesystem.
-
-**Nodes that interact with the local filesystem**
-
-- [Read/Write Files from Disk](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.filesreadwrite/)
-- [Local File Trigger](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.localfiletrigger/)
-- [Execute Command](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.executecommand/)
-
-## 📜 License
-
-This project is licensed under the Apache License 2.0 - see the
-[LICENSE](LICENSE) file for details.
-
-## 💬 Support
-
-Join the conversation in the [n8n Forum](https://community.n8n.io/), where you
-can:
-
-- **Share Your Work**: Show off what you’ve built with n8n and inspire others
-  in the community.
-- **Ask Questions**: Whether you’re just getting started or you’re a seasoned
-  pro, the community and our team are ready to support with any challenges.
-- **Propose Ideas**: Have an idea for a feature or improvement? Let us know!
-  We’re always eager to hear what you’d like to see next.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
