@@ -34,7 +34,7 @@ x-n8n: &service-n8n
       required: true
 
 x-ollama: &service-ollama
-  image: ghcr.io/justincv/ollama-arm64:latest
+  image: ollama/ollama:0.12.6
   mem_limit: 8g
   memswap_limit: 16g
   container_name: ollama
@@ -46,7 +46,7 @@ x-ollama: &service-ollama
     - ollama_storage:/root/.ollama
 
 x-init-ollama: &init-ollama
-  image: ghcr.io/justincv/ollama-arm64:latest
+  image: ollama/ollama:0.12.6
   networks: ['demo']
   container_name: ollama-pull-llama
   volumes:
