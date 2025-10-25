@@ -54,10 +54,10 @@ x-init-ollama: &init-ollama
   entrypoint: /bin/sh
   environment:
     - OLLAMA_HOST=ollama:11434
-    - OLLAMA_MODEL=${OLLAMA_MODEL:-phi-2}
+    - OLLAMA_MODEL=${OLLAMA_MODEL:-phi}
   command:
     - "-c"
-    - "sleep 3; ollama pull ${OLLAMA_MODEL:-phi-2}"
+    - "sleep 3; ollama pull ${OLLAMA_MODEL:-phi}"
 
 services:
   postgres:
