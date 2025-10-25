@@ -1,11 +1,15 @@
 services:
-  traefik:
-    profiles: ["https"]
-
   n8n:
-    networks: ['demo']
     environment:
       N8N_PROTOCOL: http
+      N8N_PORT: "5678"
+      WEBHOOK_URL: http://localhost:5678/
     ports:
       - "5678:5678"
+    networks:
+      - demo
     labels: []
+
+  traefik:
+    profiles:
+      - disabled
