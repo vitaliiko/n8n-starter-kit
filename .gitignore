@@ -3,3 +3,4 @@ backups/*
 !backups/.gitkeep
 certs/*
 !certs/.gitkeep
+.idea/
