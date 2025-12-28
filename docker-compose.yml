@@ -102,6 +102,24 @@ services:
       postgres:
         condition: service_healthy
 
+  flyway:
+    image: flyway/flyway:latest
+    hostname: flyway
+    container_name: flyway
+    networks: ['demo']
+    restart: "no"
+    environment:
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      FLYWAY_USER: ${POSTGRES_USER}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
+      FLYWAY_SCHEMAS: ${FLYWAY_SCHEMA:-migrations_schema}
+    volumes:
+      - ./migrations:/flyway/sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   n8n-import:
     <<: *service-n8n
     hostname: n8n-import

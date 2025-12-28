@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS migration_log (
+  id SERIAL PRIMARY KEY,
+  migration_name VARCHAR(255) NOT NULL,
+  executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(50) NOT NULL DEFAULT 'pending'
+);
