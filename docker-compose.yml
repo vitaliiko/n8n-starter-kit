@@ -108,12 +108,13 @@ services:
     container_name: flyway
     networks: ['demo']
     restart: "no"
-    environment:
-      FLYWAY_LOCATIONS: filesystem:/flyway/sql
-      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      FLYWAY_USER: ${POSTGRES_USER}
-      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
-      FLYWAY_SCHEMAS: ${FLYWAY_SCHEMA:-migrations_schema}
+    command:
+      - -url=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - -user=${POSTGRES_USER}
+      - -password=${POSTGRES_PASSWORD}
+      - -schemas=${FLYWAY_SCHEMA:-migrations_schema}
+      - -connectRetries=60
+      - migrate
     volumes:
       - ./migrations:/flyway/sql:ro
     depends_on:
