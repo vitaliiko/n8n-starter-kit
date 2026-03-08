@@ -143,16 +143,14 @@ services:
     container_name: n8n-community-nodes
     restart: "no"
     entrypoint: /bin/sh
-    environment:
-      N8N_COMMUNITY_NODE_PACKAGES: "@telepilotco/n8n-nodes-telepilot n8n-nodes-playwright"
     command:
       - "-c"
       - |
         set -e
         mkdir -p /home/node/.n8n/nodes
         cd /home/node/.n8n/nodes
-        echo "Installing: $N8N_COMMUNITY_NODE_PACKAGES"
-        npm i $N8N_COMMUNITY_NODE_PACKAGES
+        echo "Installing: packages"
+        npm i @telepilotco/n8n-nodes-telepilot n8n-nodes-playwright
         echo "Done."
     volumes:
       - n8n_storage:/home/node/.n8n
