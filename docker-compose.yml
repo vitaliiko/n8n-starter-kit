@@ -27,6 +27,7 @@ x-n8n: &service-n8n
     TZ: ${DEFAULT_TIMEZONE}
     N8N_DIAGNOSTICS_ENABLED: "false"
     N8N_PERSONALIZATION_ENABLED: "false"
+    N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: "true"
     N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-}
     N8N_DEMO_CREDENTIALS_KEY: ${N8N_DEMO_CREDENTIALS_KEY:-}
     N8N_USER_MANAGEMENT_JWT_SECRET: ${N8N_USER_MANAGEMENT_JWT_SECRET:-}
@@ -136,6 +137,29 @@ services:
       postgres:
         condition: service_healthy
 
+  n8n-community-nodes:
+    <<: *service-n8n
+    hostname: n8n-community-nodes
+    container_name: n8n-community-nodes
+    restart: "no"
+    entrypoint: /bin/sh
+    environment:
+      N8N_COMMUNITY_NODE_PACKAGES: "@telepilotco/n8n-nodes-telepilot n8n-nodes-playwright"
+    command:
+      - "-c"
+      - |
+        set -e
+        mkdir -p /home/node/.n8n/nodes
+        cd /home/node/.n8n/nodes
+        echo "Installing: $N8N_COMMUNITY_NODE_PACKAGES"
+        npm i $N8N_COMMUNITY_NODE_PACKAGES
+        echo "Done."
+    volumes:
+      - n8n_storage:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   n8n:
     <<: *service-n8n
     hostname: n8n
@@ -149,6 +173,8 @@ services:
       postgres:
         condition: service_healthy
       n8n-import:
+        condition: service_completed_successfully
+      n8n-community-nodes:
         condition: service_completed_successfully
     labels:
       - traefik.enable=true
