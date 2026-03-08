@@ -122,6 +122,16 @@ services:
       postgres:
         condition: service_healthy
 
+  playwright:
+    build:
+      context: ./playwright
+      dockerfile: Dockerfile
+    container_name: n8n-playwright
+    networks: ['demo']
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
   n8n-import:
     <<: *service-n8n
     hostname: n8n-import
@@ -150,7 +160,7 @@ services:
         mkdir -p /home/node/.n8n/nodes
         cd /home/node/.n8n/nodes
         echo "Installing: packages"
-        npm i @telepilotco/n8n-nodes-telepilot n8n-nodes-playwright
+        npm i @telepilotco/n8n-nodes-telepilot
         echo "Done."
     volumes:
       - n8n_storage:/home/node/.n8n
@@ -174,6 +184,8 @@ services:
         condition: service_completed_successfully
       n8n-community-nodes:
         condition: service_completed_successfully
+      playwright:
+        condition: service_healthy
     labels:
       - traefik.enable=true
       - traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)
