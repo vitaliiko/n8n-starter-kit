@@ -8,10 +8,12 @@ networks:
   demo:
   traefik:
     external: false
+  shared-n8n-net:
+    external: true
 
 x-n8n: &service-n8n
   image: n8nio/n8n:latest
-  networks: ['demo', 'traefik']
+  networks: ['demo', 'traefik', 'shared-n8n-net']
   dns:
     - 1.1.1.1
     - 8.8.8.8
