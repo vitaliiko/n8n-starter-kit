@@ -52,6 +52,7 @@ A complete n8n automation platform setup with PostgreSQL, Ollama (ARM64), Qdrant
 
 4. **Start the stack**
    ```bash
+   docker compose build playwright
    docker network create shared-n8n-net
    docker compose up -d
    ```
