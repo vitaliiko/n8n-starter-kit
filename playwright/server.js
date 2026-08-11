@@ -89,6 +89,12 @@ function parseCookieHeader(cookieHeader, url) {
         .filter(Boolean);
 }
 
+function resolveBooleanOption(primaryValue, aliasValue, defaultValue) {
+    if (typeof primaryValue === "boolean") return primaryValue;
+    if (typeof aliasValue === "boolean") return aliasValue;
+    return defaultValue;
+}
+
 async function getContext(options = {}) {
     if (contextPromise) {
         return contextPromise;
@@ -170,6 +176,8 @@ async function fetchPage({
                              returnLinks = true,
                              returnHtml = true,
                              returnText = true,
+                             html,
+                             text,
                              screenshot = false,
                              browserArgs = [],
                          }) {
@@ -264,8 +272,10 @@ async function fetchPage({
 
         const finalUrl = page.url();
         const title = await page.title();
-        const html = returnHtml ? await page.content() : undefined;
-        const text = returnText
+        const includeHtml = resolveBooleanOption(returnHtml, html, true);
+        const includeText = resolveBooleanOption(returnText, text, true);
+        const htmlContent = includeHtml ? await page.content() : undefined;
+        const textContent = includeText
             ? await page.evaluate(() => document.body?.innerText || "")
             : undefined;
         const links = returnLinks
@@ -279,8 +289,8 @@ async function fetchPage({
 
         const challengeDetected = detectChallengeSignals({
             title,
-            html,
-            text,
+            html: htmlContent,
+            text: textContent,
             finalUrl,
         });
 
@@ -301,8 +311,8 @@ async function fetchPage({
             url,
             finalUrl,
             title,
-            html,
-            text,
+            html: htmlContent,
+            text: textContent,
             links,
             cookies: currentCookies,
             requestCount: requests.length,

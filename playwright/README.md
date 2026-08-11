@@ -78,6 +78,8 @@ This endpoint is intended for retrieving the **fully rendered HTML of modern web
   "returnLinks": true,
   "returnHtml": true,
   "returnText": true,
+  "html": true,
+  "text": true,
   "screenshot": false,
   "browserArgs": []
 }
@@ -99,8 +101,10 @@ This endpoint is intended for retrieving the **fully rendered HTML of modern web
 | `waitForSelector`          | string          | CSS selector to wait for before extracting content                         |
 | `waitForSelectorTimeoutMs` | number          | Timeout for selector wait                                                  |
 | `returnLinks`              | boolean         | Include extracted links                                                    |
-| `returnHtml`               | boolean         | Include full HTML content                                                  |
-| `returnText`               | boolean         | Include extracted visible text                                             |
+| `returnHtml`               | boolean         | Include full HTML content. Legacy field; `html` also works                |
+| `returnText`               | boolean         | Include extracted visible text. Legacy field; `text` also works           |
+| `html`                     | boolean         | Include full HTML content                                                  |
+| `text`                     | boolean         | Include extracted visible text                                             |
 | `screenshot`               | boolean         | Capture page screenshot                                                    |
 | `browserArgs`              | array           | Additional Chromium launch arguments                                       |
 
