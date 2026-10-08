@@ -4,3 +4,5 @@ backups/*
 certs/*
 !certs/.gitkeep
 .idea/
+.codex
+
