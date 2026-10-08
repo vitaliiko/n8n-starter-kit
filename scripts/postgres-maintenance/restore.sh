@@ -34,10 +34,10 @@ fi
 
 export PGPASSWORD="${POSTGRES_PASSWORD}"
 
-log "Restoring ${POSTGRES_DB} from ${POSTGRES_BACKUP_FILE} on ${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}"
-psql \
+log "Restoring ${POSTGRES_DB} from archive ${POSTGRES_BACKUP_FILE} on ${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}"
+tar -xOf "${POSTGRES_BACKUP_FILE}" backup.sql | psql \
   --host "${POSTGRES_HOST:-postgres}" \
   --port "${POSTGRES_PORT:-5432}" \
   --username "${POSTGRES_USER}" \
   --dbname "${POSTGRES_DB}" \
-  --file "${POSTGRES_BACKUP_FILE}"
+  --file -

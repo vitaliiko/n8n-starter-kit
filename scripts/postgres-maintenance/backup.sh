@@ -7,6 +7,9 @@ log() {
 
 cleanup() {
   status=$?
+  if [ -n "${TEMP_DIR:-}" ]; then
+    rm -rf -- "${TEMP_DIR}"
+  fi
   if [ $status -eq 0 ]; then
     log "Backup completed successfully"
   else
@@ -30,7 +33,7 @@ fi
 BACKUP_DIR="$(dirname "${POSTGRES_BACKUP_FILE}")"
 log "Ensuring backup directory ${BACKUP_DIR} exists"
 mkdir -p "${BACKUP_DIR}"
-TEMP_FILE="${POSTGRES_BACKUP_FILE}.tmp"
+TEMP_DIR="$(mktemp -d "${BACKUP_DIR}/.postgres-backup.XXXXXX")"
 
 export PGPASSWORD="${POSTGRES_PASSWORD}"
 
@@ -43,9 +46,11 @@ pg_dump \
   --port "${POSTGRES_PORT:-5432}" \
   --username "${POSTGRES_USER}" \
   --dbname "${POSTGRES_DB}" \
-  --file "${TEMP_FILE}"
+  --file "${TEMP_DIR}/backup.sql"
 
-log "Moving temporary backup to ${POSTGRES_BACKUP_FILE}"
-mv "${TEMP_FILE}" "${POSTGRES_BACKUP_FILE}"
+log "Creating archive ${POSTGRES_BACKUP_FILE}"
+tar -cf "${TEMP_DIR}/backup.tar" -C "${TEMP_DIR}" backup.sql
+rm "${TEMP_DIR}/backup.sql"
+mv "${TEMP_DIR}/backup.tar" "${POSTGRES_BACKUP_FILE}"
 
-log "Backup written to ${POSTGRES_BACKUP_FILE}"
+log "Backup archive written to ${POSTGRES_BACKUP_FILE}"
